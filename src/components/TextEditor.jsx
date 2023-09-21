@@ -18,37 +18,16 @@ const TextEditor = ({ keywordsList }) => {
     }
   };
 
-  // ... (previous code)
-
   const handleKeyWords = async () => {
     try {
-      const response = await fetch(`/api/process`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ text: inputText }), // Asegúrate de que inputText tenga un valor válido
+      const response = await fetch(`/api/script/${inputText}`, {
+        method: "GET",
       });
-
       const data = await response.json();
-      setResultText(data.result);
+      setInputText(data.message);
     } catch (err) {
-      console.error(err);
+      setInputText(``);
     }
-  };
-
-  const handleInputChange = (e) => {
-    const newText = e.target.value;
-    const words = newText.split(/\s+/);
-
-    let processedText = words.reduce(
-      (acc, cur) =>
-        keywordsList.includes(cur.trim()) ? (acc += " " + cur.trim()) : acc,
-      ""
-    );
-
-    setInputText(newText);
-    setOutputText(processedText);
   };
 
   return (
@@ -57,9 +36,10 @@ const TextEditor = ({ keywordsList }) => {
         id="EA"
         className="border border-black  h-40 p-2 resize-none"
         value={inputText}
-        onChange={handleInputChange}
+        onChange={(e) => setInputText(e.target.value)}
         autoFocus
       />
+
       <textarea
         id="TA"
         className="border border-black  h-40 p-2 resize-none"
@@ -83,7 +63,14 @@ const TextEditor = ({ keywordsList }) => {
           className=" bg-red-500 w-20 p-1 text-white hover:bg-red-300 mb-2 "
           onClick={handleKeyWords}
         >
-          Send to Server
+          Script
+        </button>
+
+        <button
+          className=" bg-red-500 w-20 p-1 text-white hover:bg-red-300 mb-2 "
+          
+        >
+          Compile
         </button>
       </div>
       <KeywordChecker text={inputText} keywordsList={keywordsList} />
