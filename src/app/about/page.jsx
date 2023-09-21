@@ -18,7 +18,7 @@ function AboutPage() {
   
   useEffect(() => {
     fetchAboutInfo()
-  }, []);
+  }, [about]);
 
   return (
     <section>
