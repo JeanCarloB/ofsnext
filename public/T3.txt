@@ -1,0 +1,3 @@
+const nombres = ["Luis", "Maria", "Carmen"];
+const resultado = nombres.join(', '); // El argumento es el separador
+Resultado -> ["Luis","Maria","Carmen"]

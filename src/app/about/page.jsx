@@ -30,10 +30,10 @@ function AboutPage() {
             <li key={i} className=" transition ease-in-out delay-150 mb-3 hover:bg-white hover:text-black cursor-pointer">{e}</li>
           ))}
         </ul>
-        <p className="mb-2">{` ${about.escuela}`}</p>
+        <p className="mb-2">{about.escuela}</p>
         <p className="mb-2">{about.universidad}</p>
         <p className="mb-2">{about.semestre}</p>
-        <p className="mb-2">{` ${about.año}`}</p>
+        <p className="mb-2">{about.año}</p>
       </div>):(<div className="text-white container-fluid flex flex-col bg-red-600 text-center w-96 justify-center items-center mx-auto p-2 rounded-lg">Cargando...</div>)}
     </section>
   );

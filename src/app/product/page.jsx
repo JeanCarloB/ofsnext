@@ -2,6 +2,7 @@ import Imagen1 from "@/assets/images/panel1.jpg"
 import Imagen2 from "@/assets/images/panel2.jpg";
 import Imagen3 from "@/assets/images/panel3.jpg";
 import Image from 'next/image';
+
 function Products() {
   return (
     <div className="flex flex-col justify-center items-center gap-5">

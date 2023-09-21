@@ -1,8 +1,7 @@
 "use client";
 import { useState } from "react";
-import KeywordChecker from "@/components/KeywordChecker";
 
-const TextEditor = ({ keywordsList }) => {
+const TextEditor = () => {
   const [inputText, setInputText] = useState("");
   const [outputText, setOutputText] = useState("");
   const [resultText, setResultText] = useState("");
@@ -18,7 +17,7 @@ const TextEditor = ({ keywordsList }) => {
     }
   };
 
-  const handleKeyWords = async () => {
+  const handleScript = async () => {
     try {
       const response = await fetch(`/api/script/${inputText}`, {
         method: "GET",
@@ -27,6 +26,38 @@ const TextEditor = ({ keywordsList }) => {
       setInputText(data.message);
     } catch (err) {
       setInputText(``);
+    }
+  };
+
+  const handleCompile = async () => {
+    try {
+      const response = await fetch('/api/compile', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({text:inputText}),
+      });
+      const data = await response.json();
+      setOutputText(data.result);
+    } catch (err) {
+      setInputText(``);
+    }
+  };
+
+  const handleEval = async () => {
+    try {
+      const response = await fetch('/api/eval', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({text:outputText}),
+      });
+      const data = await response.json();
+      setResultText(data.result);
+    } catch (err) {
+      setResultText(``);
     }
   };
 
@@ -61,19 +92,25 @@ const TextEditor = ({ keywordsList }) => {
         </button>
         <button
           className=" bg-red-500 w-20 p-1 text-white hover:bg-red-300 mb-2 "
-          onClick={handleKeyWords}
+          onClick={handleScript}
         >
           Script
         </button>
 
         <button
           className=" bg-red-500 w-20 p-1 text-white hover:bg-red-300 mb-2 "
-          
+          onClick={handleCompile}
         >
           Compile
         </button>
+
+        <button
+          className=" bg-red-500 w-20 p-1 text-white hover:bg-red-300 mb-2 "
+          onClick={handleEval}
+        >
+          Eval
+        </button>
       </div>
-      <KeywordChecker text={inputText} keywordsList={keywordsList} />
     </div>
   );
 };

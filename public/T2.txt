@@ -1,0 +1,3 @@
+Ejercicio Matemático 1:
+Operación: 4 + 3 * 5 - 2 / 2
+Resultado: 15.0
