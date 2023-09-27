@@ -1,3 +1,0 @@
-// scripts/script1.js
-const message = "¡Hola desde Script 1!";
-console.log(message);

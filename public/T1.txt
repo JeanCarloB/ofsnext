@@ -1,3 +1,0 @@
-Resultado de la evaluación: 4
-Este es un mensaje estático.
-Datos predefinidos: { "nombre": "Ejemplo", "edad": 30 }

@@ -1,6 +1,9 @@
 "use client";
 import { useState } from "react";
-import { useKeywords } from "@/app/context/OFSContext";
+import { useKeywords } from "@/app/context/KeywordsContext";
+import { useScripts } from "@/app/context/ScriptsContext";
+import Modal from "@/components/Modal";
+import ModalLoad from "@/components/ModalLoad";
 
 const TextEditor = () => {
   const [inputText, setInputText] = useState("");
@@ -10,8 +13,13 @@ const TextEditor = () => {
   //const [predictedKeywords, setPredictedKeywords] = useState([]);
   const [lineCount, setLineCount] = useState(0);
   const [wordCount, setWordCount] = useState(0);
+  const [isLoaded, setLoaded] = useState(false);
+  const [load, setLoad] = useState(false);
+  const [script, setScript] = useState()
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const keywords = useKeywords();
+  const scripts = useScripts();
 
   const handleClear = () => {
     const confirmed = window.confirm(
@@ -23,6 +31,14 @@ const TextEditor = () => {
       setResultText("");
       setError("");
     }
+  };
+
+  const openModal = () => {
+    inputText && inputText.trim() !== "" ? setIsModalOpen(true) : setIsModalOpen(false);
+  };
+
+  const openLoaded = () => {
+    setLoaded(true);
   };
 
   const countLinesAndWords = (text) => {
@@ -91,14 +107,24 @@ const TextEditor = () => {
     countLinesAndWords(value); // Actualiza los contadores
   };
 
+  const handleLoad = (id) => {
+    const selected=scripts.find(e=>e.id===id);
+    setScript(selected);
+    setInputText(selected.script)
+    setLoad(true);
+  };
+
   return (
     <>
       <div className="container grid grid-cols-2 gap-5 mx-auto">
+      
         {error && (
           <p className="bg-red-500 text-white text-center mx-auto w-52 col-span-2 absolute top-24">
             {error}
           </p>
         )}
+
+        {(inputText && inputText.trim() !== "") && load ? <p className="bg-red-500 text-white text-center mx-auto w-52 col-span-2 absolute top-24">Name: {script.text}</p>:""}
         <textarea
           id="EA"
           className="outline outline-blue-500 h-40 p-2 resize-none font-mono"
@@ -152,17 +178,19 @@ const TextEditor = () => {
           </button>
 
           <button
-              className="bg-blue-500 w-20 p-1 text-white hover:bg-blue-300 mb-2"
-              onClick={handleEval}
-            >
-              Save
-            </button>
-            <button
-              className="bg-blue-500 w-20 p-1 text-white hover:bg-blue-300 mb-2"
-              onClick={handleEval}
-            >
-              Load
-            </button>
+            className="bg-blue-500 w-20 p-1 text-white hover:bg-blue-300 mb-2"
+            onClick={openModal}
+          >
+            Save
+          </button>
+          {isModalOpen ? <Modal isOpen={isModalOpen} closeModal={()=>{setIsModalOpen(false);setLoad(false)}} inputText={inputText} load={load} script={script}/>:""}
+          <button
+            className="bg-blue-500 w-20 p-1 text-white hover:bg-blue-300 mb-2"
+            onClick={openLoaded}
+          >
+            Load
+          </button>
+          {isLoaded ? <ModalLoad isOpen={isLoaded} scripts={scripts} onClose={()=>setLoaded(false)} handleLoad={handleLoad}/>:""}
         </div>
       </div>
     </>

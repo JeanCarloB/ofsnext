@@ -1,0 +1,12 @@
+[
+  {
+    "id": 1,
+    "text": "",
+    "script": "a.find(e=>e.id==e);"
+  },
+  {
+    "id": 2,
+    "text": "reduce",
+    "script": "const numeros = [1, 2, 3, 4, 5, 6];"
+  }
+]
