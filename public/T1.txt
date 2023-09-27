@@ -1,0 +1,1 @@
+// Resultado: { id: 2, value: 'dos' }

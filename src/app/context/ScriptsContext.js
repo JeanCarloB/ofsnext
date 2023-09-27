@@ -19,7 +19,7 @@ export const ScriptsProvider = ({ children }) => {
   .then((response) => response.json())
   .then((data) => setScripts(data.scripts))
   .catch((error) => console.error('Error fetching scripts:', error));
-  }, []);
+  }, [scripts]);
 
   return (
     <ScriptsContext.Provider

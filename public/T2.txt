@@ -1,3 +1,1 @@
-Ejercicio Matemático 1:
-Operación: 4 + 3 * 5 - 2 / 2
-Resultado: 15.0
+// Resultado: 21 (La suma de todos los números en el arreglo)

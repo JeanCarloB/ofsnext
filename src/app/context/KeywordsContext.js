@@ -19,7 +19,7 @@ export const KeywordsProvider = ({ children }) => {
   .then((response) => response.json())
   .then((data) => setKeywords(data.keywords))
   .catch((error) => console.error('Error fetching keywords:', error));
-  }, []);
+  }, [keywords]);
 
   return (
     <KeywordsContext.Provider

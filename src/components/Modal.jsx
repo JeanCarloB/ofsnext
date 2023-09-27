@@ -94,7 +94,7 @@ const Modal = ({ isOpen, closeModal,inputText,load,script}) => {
                   </p>
                   <input
                     type="text"
-                    value={load?script.text:name}
+                    value={load?script.name:name}
                     onChange={handleNameChange}
                     className="mt-2 p-2 border rounded-md w-full"
                   />
