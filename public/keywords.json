@@ -1,1 +1,1 @@
-["for", "while", "if", "try", "catch"]
+["for", "while", "if", "try", "catch", "console", "log", "else", "elif", "switch", "case", "break", "continue", "return", "function", "class", "new", "this", "import", "from", "var", "let", "const", "await", "async"]
