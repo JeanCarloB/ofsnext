@@ -6,20 +6,18 @@ function AboutPage() {
   const [isCharged, setIsCharged] = useState(false);
   const [isPopoverOpen, setIsPopoverOpen] = useState(false); // Estado para controlar si el popover está abierto
 
-  const fetchAboutInfo = async () => {
-    try {
-      const response = await fetch(`/api/about`);
-      const data = await response.json();
+  useEffect(() => {
+  fetch(`/api/about`)
+    .then((response) => response.json())
+    .then((data) => {
       setAbout(data);
       setIsCharged(true);
-    } catch (error) {
+    })
+    .catch((error) => {
       console.log(error);
-    }
-  };
+    });
+}, [about]);
 
-  useEffect(() => {
-    fetchAboutInfo();
-  }, [about]);
 
   const togglePopover = () => {
     setIsPopoverOpen(!isPopoverOpen);

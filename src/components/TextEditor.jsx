@@ -1,21 +1,20 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useKeywords } from "@/app/context/KeywordsContext";
 import { useScripts } from "@/app/context/ScriptsContext";
-import Modal from "@/components/Modal";
-import ModalLoad from "@/components/ModalLoad";
 import Alert from "./Alert";
+import Counter from "./Counter";
+import { TextAreaComponents } from "./TextAreaComponents";
+import Buttons from "./Buttons";
 
 const TextEditor = () => {
   const [inputText, setInputText] = useState("");
   const [outputText, setOutputText] = useState("");
+  const [cursorPosition, setCursorPosition] = useState({ line: 1, column: 1 });
   const [resultText, setResultText] = useState("");
   const [error, setError] = useState("");
   const [suggestedWords, setSuggestedWords] = useState([]);
   const [selectedWordIndex, setSelectedWordIndex] = useState(-1);
-  const [lineCount, setLineCount] = useState(0);
-  const [wordCount, setWordCount] = useState(0);
-  const [cursorPosition, setCursorPosition] = useState({ line: 1, column: 1 });
   const [isLoaded, setLoaded] = useState(false);
   const [load, setLoad] = useState(false);
   const [script, setScript] = useState();
@@ -24,8 +23,10 @@ const TextEditor = () => {
 
   const keywords = useKeywords();
   const scripts = useScripts();
+  const textareaRef = useRef(null);
 
-  const handleKeyUp = ({target:{value}}) => {
+
+  const handleKeyUp = ({ target: { value } }) => {
     // Obtén el texto actual del textarea
     const text = value;
 
@@ -53,14 +54,12 @@ const TextEditor = () => {
       setOutputText("");
       setResultText("");
       setError("");
-      setCursorPosition({ line: 1, column: 1 });
-      setLineCount(0);
-      setWordCount(0);
       setIsCompile(false);
       setScript();
+      setCursorPosition({line:1,column:1})
     }
   };
-
+  
   const openModal = () => {
     inputText && inputText.trim() !== ""
       ? setIsModalOpen(true)
@@ -71,34 +70,23 @@ const TextEditor = () => {
     setLoaded(true);
   };
 
-  const countLinesAndWords = (text) => {
-    // Contar líneas
-    const lines = text.split("\n");
-    const lineCount = lines.length;
+  useEffect(() => {
+    // Llamar a getCursorPosition cuando cambie inputText
+    getCursorPosition();
+  }, [inputText]);
 
-    // Contar palabras
-    const words = text.split(/\s+/);
-    const wordCount = words.filter((word) => word !== "").length;
 
-    setLineCount(lineCount);
-    setWordCount(wordCount);
-  };
-
-  const handleKeyDown = (event) => {
-    // Obtenemos el contenido actual del textarea
-    const text = event.target.value;
-
-    // Obtenemos la posición del cursor
-    const selectionStart = event.target.selectionStart;
-
-    // Contamos las líneas y columnas
-    const lines = text.substr(0, selectionStart).split("\n");
-    const currentLine = lines.length;
-    const currentColumn = lines[currentLine - 1].length + 1;
-
-    // Actualizamos el estado con la posición del cursor
-    setCursorPosition({ line: currentLine, column: currentColumn });
-  };
+  const getCursorPosition = () => {
+    const textarea = textareaRef.current;
+    if (textarea) {
+      const selectionStart = textarea.selectionStart;
+      const text = textarea.value;
+      const lines = text.substr(0, selectionStart).split("\n");
+      const currentLine = lines.length;
+      const currentColumn = lines[currentLine - 1].length + 1;
+      setCursorPosition({ line: currentLine, column: currentColumn });
+    }
+  };  
 
   const handleScript = async () => {
     try {
@@ -143,12 +131,12 @@ const TextEditor = () => {
       });
       const data = await response.json();
 
-      if (data && data.result && scripts.find(e=>e.script===inputText)) {
+      if (data && data.result && scripts.find((e) => e.script === inputText)) {
         // Si 'data' y 'data.result' están definidos y no son nulos o indefinidos,
         // entonces tenemos información válida en 'data'
         setResultText(data.result);
         setError("");
-      }else{
+      } else {
         setResultText("");
         setError("Not result finded");
       }
@@ -158,10 +146,9 @@ const TextEditor = () => {
     }
   };
 
-  const handleOnChange = ({ target: { value } }) => {
+  const handleOnChange = (event) => {
     if (load && inputText.trim() === "") setLoad(false);
-    setInputText(value);
-    countLinesAndWords(value); // Actualiza los contadores
+    setInputText(event.target.value);
   };
 
   const handleLoad = (id) => {
@@ -171,6 +158,7 @@ const TextEditor = () => {
     setLoad(true);
     if (isCompile) setIsCompile(false);
   };
+
   const handleSuggestedWordClick = (selectedWord) => {
     // Obtén el texto actual del textarea
     const text = inputText;
@@ -219,15 +207,14 @@ const TextEditor = () => {
           ""
         )}
 
-        <textarea
-          id="EA"
-          className="outline outline-blue-500 h-40 p-2 resize-none font-mono"
-          value={inputText}
-          onChange={handleOnChange}
-          onKeyDown={handleKeyDown}
-          onKeyUp={handleKeyUp} // Agrega el manejador de eventos onKeyUp
-          autoFocus
-        />
+        <TextAreaComponents
+        textareaRef={textareaRef} 
+        inputText={inputText} 
+        outputText={outputText}
+        resultText={resultText}
+        handleOnChange={handleOnChange}
+        handleKeyUp={handleKeyUp}/>
+
         {
           <div className="max-h-40 overflow-y-auto w-28  relative">
             <div className="suggested-words bg-white border rounded border-gray-300 shadow-lg absolute z-10 mt-2">
@@ -248,93 +235,29 @@ const TextEditor = () => {
           </div>
         }
 
-        <div className="line-word-count bg-blue-500 text-white text-center place-items-center my-auto">
-          <div className="line-count">Lines: {lineCount}</div>
-          <div className="word-count">Words: {wordCount}</div>
-          {
-            <div className="cursor-pointer">
-              Cursor Pointer: ({cursorPosition.line},{cursorPosition.column})
-            </div>
-          }
-        </div>
-        <textarea
-          id="TA"
-          className="outline outline-blue-500 h-40 p-2 resize-none"
-          value={outputText}
-          readOnly
-        />
-        <textarea
-          id="RA"
-          className="outline outline-blue-500 h-40 p-2 resize-none"
-          value={resultText}
-          readOnly
+        <Counter
+          text={inputText}
+          cursorPosition={cursorPosition}
         />
 
-        <div className="flex flex-row gap-5 m-3 flex-wrap">
-          <button
-            className="bg-blue-500 w-20 p-1 text-white hover:bg-blue-300 mb-2"
-            onClick={handleClear}
-          >
-            Clear All
-          </button>
-          <button
-            className="bg-blue-500 w-20 p-1 text-white hover:bg-blue-300 mb-2"
-            onClick={handleScript}
-          >
-            Script
-          </button>
-
-          <button
-            className="bg-blue-500 w-20 p-1 text-white hover:bg-blue-300 mb-2"
-            onClick={handleCompile}
-          >
-            Compile
-          </button>
-
-          <button
-            className="bg-blue-500 w-20 p-1 text-white hover:bg-blue-300 mb-2"
-            onClick={handleEval}
-          >
-            Eval
-          </button>
-
-          <button
-            className="bg-blue-500 w-20 p-1 text-white hover:bg-blue-300 mb-2"
-            onClick={openModal}
-          >
-            Save
-          </button>
-          {isModalOpen ? (
-            <Modal
-              isOpen={isModalOpen}
-              closeModal={() => {
-                setIsModalOpen(false);
-                setLoad(false);
-              }}
-              inputText={inputText}
-              load={load}
-              script={script}
-            />
-          ) : (
-            ""
-          )}
-          <button
-            className="bg-blue-500 w-20 p-1 text-white hover:bg-blue-300 mb-2"
-            onClick={openLoaded}
-          >
-            Load
-          </button>
-          {isLoaded ? (
-            <ModalLoad
-              isOpen={isLoaded}
-              scripts={scripts}
-              onClose={() => setLoaded(false)}
-              handleLoad={handleLoad}
-            />
-          ) : (
-            ""
-          )}
-        </div>
+        <Buttons
+        handleClear={handleClear}
+        handleCompile={handleCompile}
+        handleEval={handleEval}
+        handleLoad={handleLoad}
+        handleScript={handleScript}
+        openModal={openModal}
+        isModalOpen={isModalOpen}
+        inputText={inputText}
+        load={load}
+        script={script}
+        openLoaded={openLoaded}
+        isLoaded={isLoaded}
+        scripts={scripts}
+        setIsModalOpen={(e)=>setIsModalOpen(e)}
+        setLoad={(e)=>setLoad(e)}
+        setLoaded={(e)=>setLoaded(e)}
+        />
       </div>
     </>
   );

@@ -1,8 +1,8 @@
 [
   {
     "id": 1,
-    "text": "find",
-    "script": "a.find(e=>e.id===e);"
+    "text": "lol",
+    "script": "const while"
   },
   {
     "id": 2,
@@ -13,5 +13,15 @@
     "id": 3,
     "text": "map",
     "script": "a.map(e=>e**2);"
+  },
+  {
+    "id": 4,
+    "text": "cloria.ofs",
+    "script": "while"
+  },
+  {
+    "id": 5,
+    "text": "bobo",
+    "script": "hola"
   }
 ]
