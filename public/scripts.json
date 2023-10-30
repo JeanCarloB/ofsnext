@@ -1,8 +1,8 @@
 [
   {
     "id": 1,
-    "text": "lol",
-    "script": "const while"
+    "text": "ofs_test.ofs",
+    "script": "const nats = [* 0, n -> n + 1]\nconst even = nats >> [? n -> n % 2 == 0] \n const evenLessThanEleven = even >> [? n -> n < 11]\n evenLessThanEleven >> [> n -> console.log(n) ]"
   },
   {
     "id": 2,
@@ -13,15 +13,5 @@
     "id": 3,
     "text": "map",
     "script": "a.map(e=>e**2);"
-  },
-  {
-    "id": 4,
-    "text": "cloria.ofs",
-    "script": "while"
-  },
-  {
-    "id": 5,
-    "text": "bobo",
-    "script": "hola"
   }
 ]

@@ -9,24 +9,29 @@ function Counter({
   const [wordCount, setWordCount] = useState(0);
     
   const countLinesAndWords = (text) => {
-    // Contar líneas
-    const lines = text.split("\n");
-    const lineCount = lines.length;
-
-    // Contar palabras
-    const words = text.split(/\s+/);
-    const wordCount = words.filter((word) => word !== "").length;
-
-    setLineCount(lineCount);
-    setWordCount(wordCount);
+    if (text) {
+      // Si 'text' tiene un valor
+      const lines = text.split("\n");
+      const lineCount = lines.length;
+  
+      const words = text.split(/\s+/);
+      const wordCount = words.filter((word) => word !== "").length;
+  
+      setLineCount(lineCount);
+      setWordCount(wordCount);
+    } else {
+      // Si 'text' es null o undefined, establece los recuentos en 0
+      setLineCount(0);
+      setWordCount(0);
+    }
   };
+  
 
   useEffect(() => {
     // Este efecto se ejecutará cada vez que lineCount, wordCount o cursorPosition cambien
     // Puedes realizar acciones aquí cuando cambian las propiedades
     // Por ejemplo, puedes mostrar un mensaje en la consola o ejecutar alguna lógica adicional
     countLinesAndWords(text);
-    console.log(cursorPosition.line,cursorPosition.column)
   }, [text,cursorPosition.line,cursorPosition.column]);
 
   return (

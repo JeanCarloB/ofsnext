@@ -8,10 +8,16 @@ import { TextAreaComponents } from "./TextAreaComponents";
 import Buttons from "./Buttons";
 
 const TextEditor = () => {
-  const [inputText, setInputText] = useState("");
-  const [outputText, setOutputText] = useState("");
+
+    // Obtener datos desde localStorage o usar valores predeterminados
+    const savedText = typeof window !== 'undefined' ? localStorage.getItem("textEditorContent") || "" : "";
+    const savedOutputText = typeof window !== 'undefined' ? localStorage.getItem("textEditorOutputText") || "":"";
+    const savedResultText = typeof window !== 'undefined' ? localStorage.getItem("textEditorResultText") || "":"";
+  
+  const [inputText, setInputText] = useState(savedText);
+  const [outputText, setOutputText] = useState(savedOutputText);
   const [cursorPosition, setCursorPosition] = useState({ line: 1, column: 1 });
-  const [resultText, setResultText] = useState("");
+  const [resultText, setResultText] = useState(savedResultText);
   const [error, setError] = useState("");
   const [suggestedWords, setSuggestedWords] = useState([]);
   const [selectedWordIndex, setSelectedWordIndex] = useState(-1);
@@ -24,7 +30,6 @@ const TextEditor = () => {
   const keywords = useKeywords();
   const scripts = useScripts();
   const textareaRef = useRef(null);
-
 
   const handleKeyUp = ({ target: { value } }) => {
     // Obtén el texto actual del textarea
@@ -56,10 +61,10 @@ const TextEditor = () => {
       setError("");
       setIsCompile(false);
       setScript();
-      setCursorPosition({line:1,column:1})
+      setCursorPosition({ line: 1, column: 1 });
     }
   };
-  
+
   const openModal = () => {
     inputText && inputText.trim() !== ""
       ? setIsModalOpen(true)
@@ -70,11 +75,10 @@ const TextEditor = () => {
     setLoaded(true);
   };
 
-  useEffect(() => {
-    // Llamar a getCursorPosition cuando cambie inputText
-    getCursorPosition();
-  }, [inputText]);
 
+  useEffect(() => {
+    getCursorPosition();
+  }, []); 
 
   const getCursorPosition = () => {
     const textarea = textareaRef.current;
@@ -86,7 +90,7 @@ const TextEditor = () => {
       const currentColumn = lines[currentLine - 1].length + 1;
       setCursorPosition({ line: currentLine, column: currentColumn });
     }
-  };  
+  };
 
   const handleScript = async () => {
     try {
@@ -94,12 +98,21 @@ const TextEditor = () => {
         method: "GET",
       });
       const data = await response.json();
-      setInputText(data.message);
+      
+      if (data && data.data) {
+        // Si la solicitud fue exitosa y data.data está definido
+        setInputText(data.data.script);
+      } else {
+        // Maneja el caso en el que no se encontró el script
+        setInputText("Script not found");
+      }
     } catch (err) {
-      setInputText("");
+      // Maneja errores de red o del servidor
+      setInputText("Internal Server Error");
     }
   };
-
+  
+  
   const handleCompile = async () => {
     try {
       setIsCompile(true);
@@ -114,6 +127,9 @@ const TextEditor = () => {
       !inputText || inputText.trim <= 0
         ? setError("The EA field is empty")
         : (setOutputText(data.result), setError(""));
+
+      // Guardar outputText en el almacenamiento local
+      localStorage.setItem("textEditorOutputText", data.result);
     } catch (err) {
       console.log(err);
       setInputText(``);
@@ -140,6 +156,7 @@ const TextEditor = () => {
         setResultText("");
         setError("Not result finded");
       }
+      localStorage.setItem("textEditorResultText", data.result);
     } catch (err) {
       setResultText("");
       setError("TA is empty");
@@ -149,12 +166,19 @@ const TextEditor = () => {
   const handleOnChange = (event) => {
     if (load && inputText.trim() === "") setLoad(false);
     setInputText(event.target.value);
+    const newText = event.target.value;
+    setInputText(newText);
+
+    // Guardar en localStorage
+    console.log("Lo guarda")
+    localStorage.setItem("textEditorContent", newText);
   };
 
   const handleLoad = (id) => {
     const selected = scripts.find((e) => e.id === id);
     setScript(selected);
     setInputText(selected.script);
+    localStorage.setItem("textEditorContent", inputText);
     setLoad(true);
     if (isCompile) setIsCompile(false);
   };
@@ -208,13 +232,13 @@ const TextEditor = () => {
         )}
 
         <TextAreaComponents
-        textareaRef={textareaRef} 
-        inputText={inputText} 
-        outputText={outputText}
-        resultText={resultText}
-        handleOnChange={handleOnChange}
-        handleKeyUp={handleKeyUp}/>
-
+          textareaRef={textareaRef}
+          inputText={inputText}
+          outputText={outputText}
+          resultText={resultText}
+          handleOnChange={handleOnChange}
+          handleKeyUp={handleKeyUp}
+        />
         {
           <div className="max-h-40 overflow-y-auto w-28  relative">
             <div className="suggested-words bg-white border rounded border-gray-300 shadow-lg absolute z-10 mt-2">
@@ -226,7 +250,11 @@ const TextEditor = () => {
                       ? "bg-blue-500 text-white"
                       : "hover:bg-blue-100"
                   }`}
-                  onClick={() => handleSuggestedWordClick(word)}
+                  onClick={
+                    inputText.trim() <= 0 && inputText
+                      ? ""
+                      : () => handleSuggestedWordClick(word)
+                  }
                 >
                   {word}
                 </div>
@@ -235,28 +263,25 @@ const TextEditor = () => {
           </div>
         }
 
-        <Counter
-          text={inputText}
-          cursorPosition={cursorPosition}
-        />
+        <Counter text={inputText} cursorPosition={cursorPosition} />
 
         <Buttons
-        handleClear={handleClear}
-        handleCompile={handleCompile}
-        handleEval={handleEval}
-        handleLoad={handleLoad}
-        handleScript={handleScript}
-        openModal={openModal}
-        isModalOpen={isModalOpen}
-        inputText={inputText}
-        load={load}
-        script={script}
-        openLoaded={openLoaded}
-        isLoaded={isLoaded}
-        scripts={scripts}
-        setIsModalOpen={(e)=>setIsModalOpen(e)}
-        setLoad={(e)=>setLoad(e)}
-        setLoaded={(e)=>setLoaded(e)}
+          handleClear={handleClear}
+          handleCompile={handleCompile}
+          handleEval={handleEval}
+          handleLoad={handleLoad}
+          handleScript={handleScript}
+          openModal={openModal}
+          isModalOpen={isModalOpen}
+          inputText={inputText}
+          load={load}
+          script={script}
+          openLoaded={openLoaded}
+          isLoaded={isLoaded}
+          scripts={scripts}
+          setIsModalOpen={(e) => setIsModalOpen(e)}
+          setLoad={(e) => setLoad(e)}
+          setLoaded={(e) => setLoaded(e)}
         />
       </div>
     </>
