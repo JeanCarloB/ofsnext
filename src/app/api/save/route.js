@@ -1,6 +1,4 @@
 import { NextResponse } from "next/server";
-const fs = require("fs");
-const path = require("path");
 
 export async function POST(req) {
   const { text, script } = await req.json();

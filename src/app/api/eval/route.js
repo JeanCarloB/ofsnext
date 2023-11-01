@@ -1,13 +1,11 @@
 import { NextResponse } from "next/server";
-const fs = require("fs");
-const path = require("path");
-
+import DBHandler from "../dbHandler/DBHandler";
 export async function POST(req) {
-  const {id}=await req.json();
+  const {id} = await req.json();
+  const dbHandler=new DBHandler();
   try {
-    const filePath = path.join(process.cwd(), "public", `T${id}.txt`);
-    const fileContent = await fs.promises.readFile(filePath, "utf-8");
-    return NextResponse.json({result:fileContent});
+    const data=await dbHandler.handleEval(id);
+    return NextResponse.json({result:data});
   } catch (error) {
     console.log(error)
     return NextResponse.json({ message: error }, { status: 500 });

@@ -1,14 +1,13 @@
 import {NextResponse} from 'next/server';
+import DBHandler from '../dbHandler/DBHandler';
 
-export async function POST(req, res) {
+export async function POST(req) {
+  const dbHandler=new DBHandler();
     try {
-      const data = await req.json();
-      const timestampedText = `Echo from server at ${new Date().toISOString()}\n${
-        data.text
-      } `;
-      return NextResponse.json({ result: timestampedText });
+      const data= await dbHandler.handleCompile(req);
+      return NextResponse.json({ result: data });
     } catch (err) {
       console.error(err);
-      return NextResponse.json({ message: "Script not found" }, { status: 500 });
+      return NextResponse.json({ message: err }, { status: 500 });
     }
   }

@@ -8,16 +8,10 @@ import { TextAreaComponents } from "./TextAreaComponents";
 import Buttons from "./Buttons";
 
 const TextEditor = () => {
-
-    // Obtener datos desde localStorage o usar valores predeterminados
-    const savedText = typeof window !== 'undefined' ? localStorage.getItem("textEditorContent") || "" : "";
-    const savedOutputText = typeof window !== 'undefined' ? localStorage.getItem("textEditorOutputText") || "":"";
-    const savedResultText = typeof window !== 'undefined' ? localStorage.getItem("textEditorResultText") || "":"";
-  
-  const [inputText, setInputText] = useState(savedText);
-  const [outputText, setOutputText] = useState(savedOutputText);
+  const [inputText, setInputText] = useState("");
+  const [outputText, setOutputText] = useState("");
   const [cursorPosition, setCursorPosition] = useState({ line: 1, column: 1 });
-  const [resultText, setResultText] = useState(savedResultText);
+  const [resultText, setResultText] = useState("");
   const [error, setError] = useState("");
   const [suggestedWords, setSuggestedWords] = useState([]);
   const [selectedWordIndex, setSelectedWordIndex] = useState(-1);
@@ -30,6 +24,40 @@ const TextEditor = () => {
   const keywords = useKeywords();
   const scripts = useScripts();
   const textareaRef = useRef(null);
+
+
+    // Define las claves para el almacenamiento local
+    const EAStateKey = "EAState";
+    const TAStateKey = "TAState";
+    const RAStateKey = "RAState";
+  
+    // Función para guardar el estado en el almacenamiento local
+    const saveStateToLocalStorage = () => {
+      localStorage.setItem(EAStateKey, inputText);
+      localStorage.setItem(TAStateKey, outputText);
+      localStorage.setItem(RAStateKey, resultText);
+    };
+  
+    // Función para cargar el estado desde el almacenamiento local
+    const loadStateFromLocalStorage = () => {
+      const savedEAState = localStorage.getItem(EAStateKey);
+      const savedTAState = localStorage.getItem(TAStateKey);
+      const savedRAState = localStorage.getItem(RAStateKey);
+  
+      if (savedEAState) setInputText(savedEAState);
+      if (savedTAState) setOutputText(savedTAState);
+      if (savedRAState) setResultText(savedRAState);
+    };
+  
+    // Utiliza useEffect para cargar el estado cuando se monta el componente
+    useEffect(() => {
+      loadStateFromLocalStorage();
+    }, []);
+  
+    // Utiliza useEffect para guardar el estado cuando cambie
+    useEffect(() => {
+      saveStateToLocalStorage();
+    }, [inputText, outputText, resultText]);
 
   const handleKeyUp = ({ target: { value } }) => {
     // Obtén el texto actual del textarea
@@ -75,10 +103,9 @@ const TextEditor = () => {
     setLoaded(true);
   };
 
-
   useEffect(() => {
     getCursorPosition();
-  }, []); 
+  }, []);
 
   const getCursorPosition = () => {
     const textarea = textareaRef.current;
@@ -98,21 +125,17 @@ const TextEditor = () => {
         method: "GET",
       });
       const data = await response.json();
-      
+
       if (data && data.data) {
         // Si la solicitud fue exitosa y data.data está definido
         setInputText(data.data.script);
-      } else {
-        // Maneja el caso en el que no se encontró el script
-        setInputText("Script not found");
-      }
+      } 
     } catch (err) {
       // Maneja errores de red o del servidor
-      setInputText("Internal Server Error");
+      setInputText("Script not found");
     }
   };
-  
-  
+
   const handleCompile = async () => {
     try {
       setIsCompile(true);
@@ -127,58 +150,52 @@ const TextEditor = () => {
       !inputText || inputText.trim <= 0
         ? setError("The EA field is empty")
         : (setOutputText(data.result), setError(""));
-
-      // Guardar outputText en el almacenamiento local
-      localStorage.setItem("textEditorOutputText", data.result);
     } catch (err) {
       console.log(err);
       setInputText(``);
     }
   };
 
-  const handleEval = async () => {
-    try {
-      const response = await fetch("/api/eval", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ id: script.id }),
-      });
-      const data = await response.json();
+ const handleEval = async () => {
+  try {
+    const response = await fetch("/api/eval", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ id: script.id }),
+    });
+    const data = await response.json();
 
-      if (data && data.result && scripts.find((e) => e.script === inputText)) {
-        // Si 'data' y 'data.result' están definidos y no son nulos o indefinidos,
-        // entonces tenemos información válida en 'data'
-        setResultText(data.result);
-        setError("");
+    if (data && data.result) {
+      const trimmedResult = data.result.trim(); // Elimina espacios en blanco
+      if (trimmedResult) {
+        setResultText(trimmedResult);
+        setError(""); // Limpia cualquier error anterior
       } else {
-        setResultText("");
-        setError("Not result finded");
+        setResultText("Not evaluation found");
+        setError(""); // Limpia cualquier error anterior
       }
-      localStorage.setItem("textEditorResultText", data.result);
-    } catch (err) {
-      setResultText("");
-      setError("TA is empty");
-    }
-  };
+    } 
+  } catch (err) {
+    setResultText("");
+    setError('Not evaluation found')
+  }
+};
+
 
   const handleOnChange = (event) => {
     if (load && inputText.trim() === "") setLoad(false);
     setInputText(event.target.value);
     const newText = event.target.value;
     setInputText(newText);
-
-    // Guardar en localStorage
-    console.log("Lo guarda")
-    localStorage.setItem("textEditorContent", newText);
+    console.log("Lo guarda");
   };
 
   const handleLoad = (id) => {
     const selected = scripts.find((e) => e.id === id);
     setScript(selected);
     setInputText(selected.script);
-    localStorage.setItem("textEditorContent", inputText);
     setLoad(true);
     if (isCompile) setIsCompile(false);
   };

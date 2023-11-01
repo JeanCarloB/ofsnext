@@ -4,14 +4,23 @@ export const handleScript = async (setInputText,inputText) => {
       method: "GET",
     });
     const data = await response.json();
-    setInputText(data.message);
+
+    if (data && data.data) {
+      // Si la solicitud fue exitosa y data.data está definido
+      setInputText(data.data.script);
+    } else {
+      // Maneja el caso en el que no se encontró el script
+      setInputText("Script not found");
+    }
   } catch (err) {
-    setInputText("");
+    // Maneja errores de red o del servidor
+    setInputText("Internal Server Error");
   }
 };
 
-export const handleCompile = async (setInputText,inputText) => {
+export const handleCompile = async (setInputText,inputText,setOutputText) => {
   try {
+    setIsCompile(true);
     const response = await fetch("/api/compile", {
       method: "POST",
       headers: {
@@ -29,20 +38,28 @@ export const handleCompile = async (setInputText,inputText) => {
   }
 };
 
-export const handleEval = async (setError,setResultText,outputText) => {
+export const handleEval = async () => {
   try {
     const response = await fetch("/api/eval", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ text: outputText }),
+      body: JSON.stringify({ id: script.id }),
     });
     const data = await response.json();
-    !outputText || outputText.trim <= 0
-      ? setError("The TA field is empty")
-      : (setResultText(data.result), setError(""));
+
+    if (data && data.result && scripts.find((e) => e.script === inputText)) {
+      // Si 'data' y 'data.result' están definidos y no son nulos o indefinidos,
+      // entonces tenemos información válida en 'data'
+      setResultText(data.result);
+      setError("");
+    } else {
+      setResultText("");
+      setError("Not result finded");
+    }
   } catch (err) {
-    setResultText(``);
+    setResultText("");
+    setError("TA is empty");
   }
 };

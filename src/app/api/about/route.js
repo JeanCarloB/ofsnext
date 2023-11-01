@@ -1,12 +1,10 @@
 import { NextResponse } from "next/server";
-const fs = require("fs");
-const path = require("path");
+import DBHandler from '@/app/api/dbHandler/DBHandler';
 
 export async function GET() {
+  const dbHandler=new DBHandler();
   try {
-    const filePath = path.join(process.cwd(), "public", "about.json");
-    const fileContent = await fs.promises.readFile(filePath, "utf-8");
-    const data=JSON.parse(fileContent);
+    const data=await dbHandler.getAbout();
     return NextResponse.json(data);
   } catch (error) {
     console.log(error)
