@@ -125,7 +125,7 @@ const TextEditor = () => {
         method: "GET",
       });
       const data = await response.json();
-
+      console.log(data.data)
       if (data && data.data) {
         // Si la solicitud fue exitosa y data.data está definido
         setInputText(data.data.script);
@@ -156,32 +156,37 @@ const TextEditor = () => {
     }
   };
 
- const handleEval = async () => {
-  try {
-    const response = await fetch("/api/eval", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ id: script.id }),
-    });
-    const data = await response.json();
-
-    if (data && data.result) {
-      const trimmedResult = data.result.trim(); // Elimina espacios en blanco
-      if (trimmedResult) {
-        setResultText(trimmedResult);
-        setError(""); // Limpia cualquier error anterior
-      } else {
-        setResultText("Not evaluation found");
-        setError(""); // Limpia cualquier error anterior
+  const handleEval = async () => {
+    if (script && script.id_script) {
+      try {
+        const response = await fetch("/api/eval", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ id_script: script.id_script }),
+        });
+        const data = await response.json();
+        console.log(data);
+        if (data && data.result) {
+          const trimmedResult = data.result.trim(); // Elimina espacios en blanco
+          if (trimmedResult) {
+            setResultText(trimmedResult);
+            setError(""); // Limpia cualquier error anterior
+          } else {
+            setResultText("No evaluation found");
+            setError(""); // Limpia cualquier error anterior
+          }
+        }
+      } catch (err) {
+        setResultText("");
+        setError('No evaluation found');
       }
-    } 
-  } catch (err) {
-    setResultText("");
-    setError('Not evaluation found')
-  }
-};
+    } else {
+      setError('Script ID is not defined');
+    }
+  };
+  
 
 
   const handleOnChange = (event) => {
@@ -193,7 +198,7 @@ const TextEditor = () => {
   };
 
   const handleLoad = (id) => {
-    const selected = scripts.find((e) => e.id === id);
+    const selected = scripts.find((e) => e.id_script === id);
     setScript(selected);
     setInputText(selected.script);
     setLoad(true);
@@ -231,7 +236,7 @@ const TextEditor = () => {
 
         {inputText && inputText.trim() !== "" && load && !isCompile ? (
           <p className="bg-red-500 text-white text-center mx-auto w-52 col-span-2 absolute top-24">
-            Name: {script.text}
+            Name: {script.description}
           </p>
         ) : (
           ""
@@ -240,9 +245,9 @@ const TextEditor = () => {
         {inputText &&
         inputText.trim() !== "" &&
         isCompile &&
-        scripts.find((e) => e.script === inputText) ? (
+        scripts.find((e) => e.script == inputText) ? (
           <p className="bg-red-500 text-white text-center mx-auto w-52 col-span-2 absolute top-24">
-            Name: {scripts.find((e) => e.script === inputText).text}.js
+            Name: {scripts.find((e) => e.script === inputText).description}.js
           </p>
         ) : (
           ""
@@ -252,6 +257,7 @@ const TextEditor = () => {
           textareaRef={textareaRef}
           inputText={inputText}
           outputText={outputText}
+          
           resultText={resultText}
           handleOnChange={handleOnChange}
           handleKeyUp={handleKeyUp}

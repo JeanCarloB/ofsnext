@@ -1,14 +1,13 @@
-const fs = require("fs");
-const path = require("path");
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
 class DBHandler {
   async getAbout() {
     try {
-      const filePath = path.join(process.cwd(), "public", "about.json");
-      const fileContent = await fs.promises.readFile(filePath, "utf-8");
-      const data = JSON.parse(fileContent);
+      const data = await prisma.student.findMany();
       return data;
     } catch (error) {
-      console.log(error)
+      console.error(error);
       throw new Error("Error load about info");
     }
   }
@@ -21,126 +20,121 @@ class DBHandler {
       } `;
       return timestampedText;
     } catch (error) {
-      console.log(error)
+      console.log(error);
       throw new Error("Error trying to compile");
     }
   }
 
-  async handleEval(id){
-    try{
-      const filePath = path.join(process.cwd(), "public", `T${id}.txt`);
-      const fileContent = await fs.promises.readFile(filePath, "utf-8");
-      return fileContent;
-    }catch(error){
-      console.log(error)
-      throw new Error('Error trying to eval');
-    }
-  }
-
-  async getKeywords(){
+  async handleEval(scriptId) {
     try {
-      const filePath = path.join(process.cwd(), "public", "keywords.json");
-      const fileContent = await fs.promises.readFile(filePath, "utf-8");
-      const data=JSON.parse(fileContent);
-      return data;
-    } catch (error) {
-      console.log(error)
-      throw new Error('Error getting keywords');
-    }
-  }
-
-  async handleLoad(id){
-    try {
-      // Leer el archivo JSON actual si existe
-      const filePath = path.join(process.cwd(), "public", "scripts.json");
-      let existingScripts = [];
-  
-      try {
-        existingScripts = await fs.promises.readFile(filePath, "utf-8");
-        existingScripts = JSON.parse(existingScripts);
-        const script=existingScripts.find(e=>e.id===id);
-        return script;
-      } catch (readError) {
-        // El archivo aún no existe o no se pudo leer, lo manejaremos como un array vacío.
-        console.error(readError)
-        throw new Error('The file doesn\'t exist')
-      }
-  
-    } catch (error) {
-      console.error(error);
-      throw new Error('Error load script');
-    }
-  }
-
-  async handleSave(text,script){
-    try {
-      // Leer el archivo JSON actual si existe
-      const filePath = path.join(process.cwd(), "public", "scripts.json");
-      let existingScripts = [];
-  
-      try {
-        existingScripts = await fs.promises.readFile(filePath, "utf-8");
-        existingScripts = JSON.parse(existingScripts);
-      } catch (readError) {
-        // El archivo aún no existe o no se pudo leer, lo manejaremos como un array vacío.
-        console.log(readError)
-        throw new Error('The file doesn\'t read')
-      }
-  
-      // Generar un nuevo ID
-      const id = existingScripts.length + 1;
-  
-      // Extraer el nombre del script (primera línea antes del salto de línea)
-      const scriptMes = script.split("\0")[0].trim();
-  
-      // Crear el nuevo script en el formato deseado
-      const newScript = {
-        id,
-        text,
-        script:scriptMes,
-      };
-  
-      // Agregar el nuevo script al array
-      existingScripts.push(newScript);
-  
-      // Escribir el array actualizado en el archivo JSON
-      await fs.promises.writeFile(filePath, JSON.stringify(existingScripts, null, 2));
-  
-      return existingScripts;
-    } catch (error) {
-      console.error(error);
-      throw new Error('Error save script');
-    }
-  }
-  
-  async getScripts(){
-    try {
-      const filePath = path.join(process.cwd(), "public", "scripts.json");
-      const fileContent = await fs.promises.readFile(filePath, "utf-8");
-      const data=JSON.parse(fileContent);
-      return data;
-    } catch (error) {
-      console.log(error)
-      throw new Error('Error loading scripts');
-    }
-  }
-
-  async getScriptById(id){
-    try {
-      // Cargar los scripts desde scripts.json
-      const scriptsFilePath = path.join(process.cwd(), "public", "scripts.json");
-      const scripts = JSON.parse(await fs.readFile(scriptsFilePath, "utf-8"));
-  
-      // Buscar el script por ID en scripts.json
-      const script = scripts.find((script) => script.id === parseInt(id, 10));
-      if (script) {
-        return NextResponse.json({data: script }); // Devuelve el script como JSON
+      // Usa Prisma para buscar el script por su ID en la base de datos
+      const evaluation = await prisma.eval.findUnique({
+        where: {
+          id_eval: scriptId,
+        },
+      });
+      if (evaluation) {
+        return evaluation.result;
       } else {
-        return NextResponse.json({ message: 'Script not found' }, { status: 404 });
+        throw new Error('Eval not found');
       }
     } catch (error) {
       console.error(error);
-      return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
+      throw new Error('Error evaluating result');
+    }
+  }
+  
+  
+  
+
+  async getKeywords() {
+    try {
+      const data = await prisma.keyword.findMany();
+      return data;
+    } catch (error) {
+      console.log(error);
+      throw new Error("Error getting keywords");
+    }
+  }
+
+  async handleLoad(id) {
+    try {
+      // Usa Prisma para buscar el script por su ID en la base de datos
+      const script = await prisma.script.findUnique({
+        where: {
+          id_script: id,
+        },
+      });
+      if (script) {
+        return script;
+      } else {
+        throw new Error('Script not found');
+      }
+    } catch (error) {
+      console.error(error);
+      throw new Error('Error loading script');
+    }
+  }
+
+  // Función para guardar un nuevo script en la base de datos
+async createScript(description, script) {
+  try {
+    const newScript = await prisma.script.create({
+      data: {
+        description:description,
+        script:script,
+      },
+    });
+    return newScript;
+  } catch (error) {
+    console.error(error);
+    throw new Error("Error saving script");
+  }
+}
+
+// Función para actualizar un script existente en la base de datos
+async  updateScript(id_script,description,script) {
+  try {
+    const updatedScript = await prisma.script.update({
+      where: {
+        id_script: id_script,
+      },
+      data: {
+        script:script,
+        description:description,
+      },
+    });
+    return updatedScript;
+  } catch (error) {
+    console.error(error);
+    throw new Error("Error updating script");
+  }
+}
+
+
+  async getScripts() {
+    try {
+      const data = await prisma.script.findMany();
+      return data;
+    } catch (error) {
+      console.error(error);
+      throw new Error("Error loading scripts");
+    }
+  }
+
+  async getScriptById(id) {
+    try {
+      const script = await prisma.script.findUnique({
+        where: { id_script: id },
+      });
+      if (script) {
+        return script; // Devuelve el script como objeto
+      } else {
+        return null; // O devuelve null si no se encuentra el script
+      }
+    } catch (error) {
+      console.error(error);
+      throw new Error("Internal Server Error");
     }
   }
 }

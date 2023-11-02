@@ -57,16 +57,16 @@ const ScriptModal = ({ isOpen, scripts, onClose, handleLoad }) => {
                 <h2>Select one script</h2>
                 <ul>
                   {scripts.map((script) => (
-                    <li key={script.id}>
+                    <li key={script.id_script}>
                       <input
                         type="radio"
-                        id={script.id}
+                        id={script.id_script}
                         name="id_load"
-                        value={script.id}
-                        onChange={() => handleScriptChange(script.id)}
-            checked={selectedScript === script.id}
+                        value={script.id_script}
+                        onChange={() => handleScriptChange(script.id_script)}
+            checked={selectedScript === script.id_script}
                       />
-                      <label htmlFor={script.id}>{script.id} - {script.text}</label>
+                      <label htmlFor={script.id_script}>{script.id_script} - {script.description}</label>
                     </li>
                   ))}
 

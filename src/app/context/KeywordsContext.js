@@ -17,7 +17,10 @@ export const KeywordsProvider = ({ children }) => {
   useEffect(() =>{
   fetch(`/api/keywords`)
   .then((response) => response.json())
-  .then((data) => setKeywords(data.keywords))
+  .then((data) => {
+    const data_info= data.keywords.map(e=>e.keyword);
+    setKeywords(data_info)
+  })
   .catch((error) => console.error('Error fetching keywords:', error));
   }, [keywords]);
 

@@ -14,7 +14,7 @@ const Modal = ({ isOpen, closeModal,inputText,load,script}) => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ text: name,script: inputText}),
+          body: JSON.stringify({ description: name,script: inputText}),
         });
         const data = await response.json();
         console.log(data)
@@ -31,7 +31,7 @@ const Modal = ({ isOpen, closeModal,inputText,load,script}) => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({id:script.id, text: name,script: inputText}),
+          body: JSON.stringify({id_script:script.id_script, description: name,script: inputText}),
         });
         const data = await response.json();
         console.log(data)
@@ -94,7 +94,7 @@ const Modal = ({ isOpen, closeModal,inputText,load,script}) => {
                   </p>
                   <input
                     type="text"
-                    value={load?script.name:name}
+                    value={load?name:name}
                     onChange={handleNameChange}
                     className="mt-2 p-2 border rounded-md w-full"
                   />

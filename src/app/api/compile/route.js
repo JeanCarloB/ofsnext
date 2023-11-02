@@ -4,7 +4,7 @@ import DBHandler from '../dbHandler/DBHandler';
 export async function POST(req) {
   const dbHandler=new DBHandler();
     try {
-      const data= await dbHandler.handleCompile(req);
+      const data = await dbHandler.handleCompile(req);
       return NextResponse.json({ result: data });
     } catch (err) {
       console.error(err);
