@@ -251,7 +251,7 @@ const TextEditor = () => {
         ) : (
           ""
         )}
-        <div className="container flex gap-2 justify-around">
+        <div className="container flex gap-2 justify-evenly">
           <button
             className="bg-green-500 w-20 p-1 text-white hover:bg-green-300 mb-1"
             onClick={openModal}

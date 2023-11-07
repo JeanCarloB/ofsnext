@@ -3,7 +3,7 @@ import { Press_Start_2P } from "next/font/google";
 const inter = Press_Start_2P({ subsets: ["latin"], weight: ["400"] });
 function NavBar() {
   return (
-    <nav className="bg-black flex justify-between items-center mb-5 mx-auto p-4 border border-b-blue-700 flex-wrap">
+    <nav className="bg-black flex justify-between items-center mb-4 mx-auto p-4 border border-b-blue-700 flex-wrap">
         <div class="typewriter">
           <h1
             className={`typewriter text-green-700 font-mono text-3xl p-1 text-center ${inter.className}`}
