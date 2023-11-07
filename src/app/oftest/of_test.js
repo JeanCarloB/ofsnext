@@ -1,46 +1,49 @@
-// ofs_test.js
+class Stream {
+  constructor(init = 0) {
+    this.init = init;
+  }
 
-// Implementación de un iterable similar a nats
-function* nats() {
-    let n = 0;
-    while (true) {
+  [Symbol.iterator]() {
+    let n = this.init;
+    return {
+      next: () => ({ value: n++, done: false }),
+    };
+  }
+}
+
+// Define una función que filtra los números pares de una secuencia
+function* even(input) {
+  for (const n of input) {
+    if (n % 2 === 0) {
       yield n;
-      n++;
     }
   }
-  
-  // Implementación de un filter para números pares
-  function* filterEven(iterable) {
-    for (const value of iterable) {
-      if (value % 2 === 0) {
-        yield value;
-      }
+}
+
+// Define una función que filtra los números menores que 11 de una secuencia
+function* evenLessThanEleven(input) {
+  for (const n of input) {
+    if (n < 11) {
+      yield n;
     }
   }
-  
-  // Implementación de un filter para números menores que 11
-  function* filterLessThanEleven(iterable) {
-    for (const value of iterable) {
-      if (value < 11) {
-        yield value;
-      }
-    }
+}
+
+// Define una función que imprime los elementos de una secuencia
+function print(input) {
+  for (const n of input) {
+    console.log(n);
   }
-  
-  // Implementación de un map para imprimir valores
-  function* mapAndLog(iterable) {
-    for (const value of iterable) {
-      console.log(value);
-      yield value;
-    }
-  }
-  
-  // Uso de los iterables y combinadores
-  const natsIterable = nats();
-  const evenIterable = filterEven(natsIterable);
-  const evenLessThanElevenIterable = filterLessThanEleven(evenIterable);
-  
-  // Imprimir los valores menores que 11
-  mapAndLog(evenLessThanElevenIterable);
-  
-  
+}
+
+// Crea una instancia de la clase Nats para generar números naturales
+const stream = new Stream();
+
+// Filtra los números pares de la secuencia de números naturales
+const evenIterable = even(stream);
+
+// Filtra los números menores que 11 de la secuencia de números pares
+const evenLessThanElevenIterable = evenLessThanEleven(evenIterable);
+
+// Imprime los números pares menores que 11
+print(evenLessThanElevenIterable);

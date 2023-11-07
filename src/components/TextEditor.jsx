@@ -6,6 +6,8 @@ import Alert from "./Alert";
 import Counter from "./Counter";
 import { TextAreaComponents } from "./TextAreaComponents";
 import Buttons from "./Buttons";
+import ModalLoad from "@/components/ModalLoad";
+import Modal from "@/components/Modal";
 
 const TextEditor = () => {
   const [inputText, setInputText] = useState("");
@@ -25,39 +27,38 @@ const TextEditor = () => {
   const scripts = useScripts();
   const textareaRef = useRef(null);
 
+  // Define las claves para el almacenamiento local
+  const EAStateKey = "EAState";
+  const TAStateKey = "TAState";
+  const RAStateKey = "RAState";
 
-    // Define las claves para el almacenamiento local
-    const EAStateKey = "EAState";
-    const TAStateKey = "TAState";
-    const RAStateKey = "RAState";
-  
-    // Función para guardar el estado en el almacenamiento local
-    const saveStateToLocalStorage = () => {
-      localStorage.setItem(EAStateKey, inputText);
-      localStorage.setItem(TAStateKey, outputText);
-      localStorage.setItem(RAStateKey, resultText);
-    };
-  
-    // Función para cargar el estado desde el almacenamiento local
-    const loadStateFromLocalStorage = () => {
-      const savedEAState = localStorage.getItem(EAStateKey);
-      const savedTAState = localStorage.getItem(TAStateKey);
-      const savedRAState = localStorage.getItem(RAStateKey);
-  
-      if (savedEAState) setInputText(savedEAState);
-      if (savedTAState) setOutputText(savedTAState);
-      if (savedRAState) setResultText(savedRAState);
-    };
-  
-    // Utiliza useEffect para cargar el estado cuando se monta el componente
-    useEffect(() => {
-      loadStateFromLocalStorage();
-    }, []);
-  
-    // Utiliza useEffect para guardar el estado cuando cambie
-    useEffect(() => {
-      saveStateToLocalStorage();
-    }, [inputText, outputText, resultText]);
+  // Función para guardar el estado en el almacenamiento local
+  const saveStateToLocalStorage = () => {
+    localStorage.setItem(EAStateKey, inputText);
+    localStorage.setItem(TAStateKey, outputText);
+    localStorage.setItem(RAStateKey, resultText);
+  };
+
+  // Función para cargar el estado desde el almacenamiento local
+  const loadStateFromLocalStorage = () => {
+    const savedEAState = localStorage.getItem(EAStateKey);
+    const savedTAState = localStorage.getItem(TAStateKey);
+    const savedRAState = localStorage.getItem(RAStateKey);
+
+    if (savedEAState) setInputText(savedEAState);
+    if (savedTAState) setOutputText(savedTAState);
+    if (savedRAState) setResultText(savedRAState);
+  };
+
+  // Utiliza useEffect para cargar el estado cuando se monta el componente
+  useEffect(() => {
+    loadStateFromLocalStorage();
+  }, []);
+
+  // Utiliza useEffect para guardar el estado cuando cambie
+  useEffect(() => {
+    saveStateToLocalStorage();
+  }, [inputText, outputText, resultText]);
 
   const handleKeyUp = ({ target: { value } }) => {
     // Obtén el texto actual del textarea
@@ -125,11 +126,11 @@ const TextEditor = () => {
         method: "GET",
       });
       const data = await response.json();
-      console.log(data.data)
+      console.log(data.data);
       if (data && data.data) {
         // Si la solicitud fue exitosa y data.data está definido
         setInputText(data.data.script);
-      } 
+      }
     } catch (err) {
       // Maneja errores de red o del servidor
       setInputText("Script not found");
@@ -144,15 +145,15 @@ const TextEditor = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ text: inputText }),
+        body: JSON.stringify({ script: inputText }),
       });
       const data = await response.json();
       !inputText || inputText.trim <= 0
         ? setError("The EA field is empty")
-        : (setOutputText(data.result), setError(""));
+        : (setOutputText(data), setError(""));
     } catch (err) {
       console.log(err);
-      setInputText(``);
+      setInputText(err.message);
     }
   };
 
@@ -180,14 +181,12 @@ const TextEditor = () => {
         }
       } catch (err) {
         setResultText("");
-        setError('No evaluation found');
+        setError("No evaluation found");
       }
     } else {
-      setError('Script ID is not defined');
+      setError("Script ID is not defined");
     }
   };
-  
-
 
   const handleOnChange = (event) => {
     if (load && inputText.trim() === "") setLoad(false);
@@ -231,11 +230,11 @@ const TextEditor = () => {
 
   return (
     <>
-      <div className="container grid grid-cols-3 grid-rows-2 gap-5 mx-auto">
+      <div className="container flex flex-col justify-center">
         {error && <Alert error={error} />}
 
         {inputText && inputText.trim() !== "" && load && !isCompile ? (
-          <p className="bg-red-500 text-white text-center mx-auto w-52 col-span-2 absolute top-24">
+          <p className="bg-red-500 text-white text-center mx-auto w-52 col-span-2 absolute top-24 rounded-br-xl rounded-tr-xl">
             Name: {script.description}
           </p>
         ) : (
@@ -246,66 +245,93 @@ const TextEditor = () => {
         inputText.trim() !== "" &&
         isCompile &&
         scripts.find((e) => e.script == inputText) ? (
-          <p className="bg-red-500 text-white text-center mx-auto w-52 col-span-2 absolute top-24">
+          <p className="bg-red-500 text-white text-center mx-auto w-52 col-span-2 absolute top-24 rounded-br-xl rounded-tr-xl">
             Name: {scripts.find((e) => e.script === inputText).description}.js
           </p>
         ) : (
           ""
         )}
-
+        <div className="container flex gap-2 justify-around">
+          <button
+            className="bg-green-500 w-20 p-1 text-white hover:bg-green-300 mb-1"
+            onClick={openModal}
+          >
+            Save
+          </button>
+          {isModalOpen ? (
+            <Modal
+              isOpen={isModalOpen}
+              closeModal={() => {
+                setIsModalOpen(false);
+                setLoad(false);
+              }}
+              inputText={inputText}
+              load={load}
+              script={script}
+            />
+          ) : (
+            ""
+          )}
+          <button
+            className="bg-green-500 w-20 p-1 text-white hover:bg-green-300 mb-1"
+            onClick={openLoaded}
+          >
+            Load
+          </button>
+          {isLoaded ? (
+            <ModalLoad
+              isOpen={isLoaded}
+              scripts={scripts}
+              onClose={() => setLoaded(false)}
+              handleLoad={handleLoad}
+            />
+          ) : (
+            ""
+          )}
+        </div>
         <TextAreaComponents
           textareaRef={textareaRef}
           inputText={inputText}
           outputText={outputText}
-          
           resultText={resultText}
           handleOnChange={handleOnChange}
           handleKeyUp={handleKeyUp}
         />
-        {
-          <div className="max-h-40 overflow-y-auto w-28  relative">
-            <div className="suggested-words bg-white border rounded border-gray-300 shadow-lg absolute z-10 mt-2">
-              {suggestedWords.map((word, index) => (
-                <div
-                  key={word}
-                  className={`cursor-pointer suggested-word py-1 px-2${
-                    index === selectedWordIndex
-                      ? "bg-blue-500 text-white"
-                      : "hover:bg-blue-100"
-                  }`}
-                  onClick={
-                    inputText.trim() <= 0 && inputText
-                      ? ""
-                      : () => handleSuggestedWordClick(word)
-                  }
-                >
-                  {word}
+        <div className="flex justify-between items-center flex-wrap">
+          <div className="grid grid-cols-2 grid-rows-1 mx-auto">
+            {
+              <div className="max-h-40 overflow-y-auto w-28  relative">
+                <div className="suggested-words bg-white border rounded border-green-500 shadow-lg absolute z-10 mt-2">
+                  {suggestedWords.map((word, index) => (
+                    <div
+                      key={word}
+                      className={`cursor-pointer suggested-word py-1 px-2${
+                        index === selectedWordIndex
+                          ? "bg-green-500 text-white"
+                          : "hover:bg-green-100"
+                      } border-green-500`}
+                      onClick={
+                        inputText.trim() <= 0 && inputText
+                          ? ""
+                          : () => handleSuggestedWordClick(word)
+                      }
+                    >
+                      {word}
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              </div>
+            }
+
+            <Counter text={inputText} cursorPosition={cursorPosition} />
           </div>
-        }
-
-        <Counter text={inputText} cursorPosition={cursorPosition} />
-
-        <Buttons
-          handleClear={handleClear}
-          handleCompile={handleCompile}
-          handleEval={handleEval}
-          handleLoad={handleLoad}
-          handleScript={handleScript}
-          openModal={openModal}
-          isModalOpen={isModalOpen}
-          inputText={inputText}
-          load={load}
-          script={script}
-          openLoaded={openLoaded}
-          isLoaded={isLoaded}
-          scripts={scripts}
-          setIsModalOpen={(e) => setIsModalOpen(e)}
-          setLoad={(e) => setLoad(e)}
-          setLoaded={(e) => setLoaded(e)}
-        />
+          <Buttons
+            handleClear={handleClear}
+            handleCompile={handleCompile}
+            handleEval={handleEval}
+            handleScript={handleScript}
+          />
+        </div>
       </div>
     </>
   );

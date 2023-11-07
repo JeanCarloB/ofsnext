@@ -35,7 +35,7 @@ function Counter({
   }, [text,cursorPosition.line,cursorPosition.column]);
 
   return (
-    <div className="line-word-count bg-blue-500 text-white text-center place-items-center my-auto">
+    <div className="line-word-count bg-green-500 text-white text-center place-items-center my-auto">
       <div className="line-count">Lines: {lineCount}</div>
       <div className="word-count">Words: {wordCount}</div>
       <div className="cursor-pointer">

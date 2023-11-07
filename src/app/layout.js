@@ -1,6 +1,7 @@
 "use client";
 import "./globals.css";
 import { Inter } from "next/font/google";
+
 import NavBar from "@/components/NavBar";
 import { KeywordsProvider } from "@/app/context/KeywordsContext";
 import { ScriptsProvider } from "@/app/context/ScriptsContext";

@@ -14,35 +14,54 @@ class DBHandler {
 
   async handleCompile(req) {
     try {
-      const data = await req.json();
-      const timestampedText = `Echo from server at ${new Date().toISOString()}\n${
-        data.text
-      } `;
-      return timestampedText;
+      const { script } = await req.json();
+      // Asegúrate de que el script esté escrito en Prolog y siga su sintaxis.
+      const prologScript = `${script}.`;
+      console.log(prologScript);
+      
+      // Realizar una solicitud HTTP POST
+      const response = await fetch('http://localhost:8000/compile', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json', // Ajusta el tipo de contenido según tus necesidades
+        },
+        body: JSON.stringify({ script: prologScript }),
+      });
+  
+      if (response.ok) {
+        // Si la solicitud fue exitosa, obtener la respuesta en formato JSON
+        const data = await response.json();
+        console.log(data);
+        return data;
+      } else {
+        // Manejar errores de solicitud
+        console.error('Error en la solicitud: ', response.status);
+        throw new Error("Error trying to compile");
+      }
     } catch (error) {
       console.log(error);
       throw new Error("Error trying to compile");
     }
   }
-
-  async handleEval(scriptId) {
-    try {
-      // Usa Prisma para buscar el script por su ID en la base de datos
-      const evaluation = await prisma.eval.findUnique({
-        where: {
-          id_eval: scriptId,
-        },
-      });
-      if (evaluation) {
-        return evaluation.result;
-      } else {
-        throw new Error('Eval not found');
+  
+    async handleEval(scriptId) {
+      try {
+        // Usa Prisma para buscar el script por su ID en la base de datos
+        const evaluation = await prisma.eval.findUnique({
+          where: {
+            id_eval: scriptId,
+          },
+        });
+        if (evaluation) {
+          return evaluation.result;
+        } else {
+          throw new Error('Eval not found');
+        }
+      } catch (error) {
+        console.error(error);
+        throw new Error('Error evaluating result');
       }
-    } catch (error) {
-      console.error(error);
-      throw new Error('Error evaluating result');
     }
-  }
   
   
   

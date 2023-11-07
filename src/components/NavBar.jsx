@@ -1,17 +1,38 @@
-import Link from "next/link"
-import Image from 'next/image';
-import LogoImage from "@/assets/images/UNA.png"
+import Link from "next/link";
+import { Press_Start_2P } from "next/font/google";
+const inter = Press_Start_2P({ subsets: ["latin"], weight: ["400"] });
 function NavBar() {
   return (
-    <nav className='bg-black grid sm:grid-cols-2 md:grid-cols-   grid-rows-1 lg:grid-cols-2 justify-center items-center mb-16 h-16 mx-auto p-4 border border-b-blue-700'>
-        <ul className="flex flex-row justify-evenly items-center h-16">
-            <Image src={LogoImage} alt="Logo" className=" w-20" priority="true"></Image>
-            <Link className="mx-auto mr-5 bg-black text-white hover:bg-white hover:text-black p-1 rounded" href="/">Home</Link>  
-            <Link className="mx-auto mr-5 bg-black text-white hover:bg-white hover:text-black p-1 rounded" href="/about">About</Link>
-            <Link className="mx-auto mr-5 bg-black text-white hover:bg-white hover:text-black p-1 rounded" href="/product">Products</Link>
-        </ul>
+    <nav className="bg-black flex justify-between items-center mb-5 mx-auto p-4 border border-b-blue-700 flex-wrap">
+        <div class="typewriter">
+          <h1
+            className={`typewriter text-green-700 font-mono text-3xl p-1 text-center ${inter.className}`}
+          >
+            OFS Project
+          </h1>
+        </div>
+        <div className="flex flex-row justify-between items-center flex-wrap">
+          <Link
+            className="mx-auto mr-5 bg-black text-white hover:bg-white hover:text-black p-1 rounded"
+            href="/"
+          >
+            Home
+          </Link>
+          <Link
+            className="mx-auto mr-5 bg-black text-white hover:bg-white hover:text-black p-1 rounded"
+            href="/about"
+          >
+            About
+          </Link>
+          <Link
+            className="mx-auto mr-5 bg-black text-white hover:bg-white hover:text-black p-1 rounded"
+            href="/product"
+          >
+            Products
+          </Link>
+        </div>
     </nav>
-  )
+  );
 }
 
-export default NavBar
+export default NavBar;
